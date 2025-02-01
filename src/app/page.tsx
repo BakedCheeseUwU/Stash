@@ -1,37 +1,99 @@
-import Link from "next/link";
+"use client";
 
-export default function HomePage() {
+import { useState } from "react";
+import { type FileItem, mockData } from "../lib/mockData";
+import { FileExplorer } from "../components/FileExplorer";
+import { SearchBar } from "../components/SearchBar";
+import { Button } from "~/components/ui/button";
+import { Upload, ChevronRight } from "lucide-react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+} from "~/components/ui/breadcrumb";
+
+export default function GoogleDriveClone() {
+  const [currentFolder, setCurrentFolder] = useState<FileItem>(mockData);
+  const [breadcrumbs, setBreadcrumbs] = useState<FileItem[]>([mockData]);
+  const [searchResults, setSearchResults] = useState<FileItem[] | null>(null);
+
+  const handleUpload = () => {
+    // Mock upload functionality
+    alert("Upload functionality would be implemented here");
+  };
+
+  const navigateToFolder = (folder: FileItem) => {
+    setCurrentFolder(folder);
+    setBreadcrumbs((prev) => {
+      const index = prev.findIndex((item) => item.id === folder.id);
+      if (index !== -1) {
+        return prev.slice(0, index + 1);
+      } else {
+        return [...prev, folder];
+      }
+    });
+    setSearchResults(null);
+  };
+
+  const handleSearch = (query: string) => {
+    if (!query) {
+      setSearchResults(null);
+      return;
+    }
+
+    const searchRecursive = (items: FileItem[]): FileItem[] => {
+      return items.flatMap((item) => {
+        if (item.name.toLowerCase().includes(query.toLowerCase())) {
+          return [item];
+        }
+        if (item.children) {
+          return searchRecursive(item.children);
+        }
+        return [];
+      });
+    };
+
+    const results = searchRecursive(mockData.children ?? []);
+    setSearchResults(results);
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-        <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-          Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-        </h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/usage/first-steps"
-            target="_blank"
+    <div className="min-h-screen bg-gray-900 p-8 text-gray-100">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <h1 className="text-2xl font-bold">Google Drive Clone</h1>
+          <SearchBar onSearch={handleSearch} />
+          <Button
+            onClick={handleUpload}
+            className="bg-blue-600 text-white hover:bg-blue-700"
           >
-            <h3 className="text-2xl font-bold">First Steps →</h3>
-            <div className="text-lg">
-              Just the basics - Everything you need to know to set up your
-              database and authentication.
-            </div>
-          </Link>
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/introduction"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">Documentation →</h3>
-            <div className="text-lg">
-              Learn more about Create T3 App, the libraries it uses, and how to
-              deploy it.
-            </div>
-          </Link>
+            <Upload className="mr-2 h-4 w-4" /> Upload
+          </Button>
         </div>
+
+        {!searchResults && (
+          <Breadcrumb className="mb-6">
+            {breadcrumbs.map((item, index) => (
+              <BreadcrumbItem key={item.id}>
+                <BreadcrumbLink
+                  onClick={() => navigateToFolder(item)}
+                  className="cursor-pointer text-blue-400 hover:text-blue-300"
+                >
+                  {item.name}
+                </BreadcrumbLink>
+                {index < breadcrumbs.length - 1 && (
+                  <ChevronRight className="mx-1 h-4 w-4 text-gray-500" />
+                )}
+              </BreadcrumbItem>
+            ))}
+          </Breadcrumb>
+        )}
+
+        <FileExplorer
+          items={searchResults ?? currentFolder.children ?? []}
+          onFolderClick={navigateToFolder}
+        />
       </div>
-    </main>
+    </div>
   );
 }
