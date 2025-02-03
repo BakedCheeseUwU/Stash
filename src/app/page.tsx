@@ -17,8 +17,6 @@ export default function GoogleDriveClone() {
   const [breadcrumbs, setBreadcrumbs] = useState<FileItem[]>([mockData]);
   const [searchResults, setSearchResults] = useState<FileItem[] | null>(null);
 
-  console.log(process.env.SINGLESTORE_HOST);
-
   const handleUpload = () => {
     // Mock upload functionality
     alert("Upload functionality would be implemented here");
