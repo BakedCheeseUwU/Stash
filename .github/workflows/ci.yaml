@@ -20,4 +20,10 @@ jobs:
         run: pnpm typecheck
 
       - name: Lint
+        env:
+          SINGLESTORE_USER: ${{ secrets.SINGLESTORE_USER }}
+          SINGLESTORE_PASS: ${{ secrets.SINGLESTORE_PASS }}
+          SINGLESTORE_HOST: ${{ secrets.SINGLESTORE_HOST }}
+          SINGLESTORE_PORT: ${{ secrets.SINGLESTORE_PORT }}
+          SINGLESTORE_DB_NAME: ${{ secrets.SINGLESTORE_DB_NAME }}
         run: pnpm lint
