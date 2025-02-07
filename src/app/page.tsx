@@ -1,98 +1,102 @@
 "use client";
 
-import { useState } from "react";
-import { type FileItem, mockData } from "../lib/mockData";
-import { FileExplorer } from "../components/FileExplorer";
-import { SearchBar } from "../components/SearchBar";
-import { Button } from "~/components/ui/button";
+import { useMemo, useState } from "react";
+import { mockFolders, mockFiles } from "~/lib/mockData";
 import { Upload, ChevronRight } from "lucide-react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-} from "~/components/ui/breadcrumb";
+import { Button } from "../components/ui/button";
+import { FileRow, FolderRow } from "./file-row";
 
 export default function GoogleDriveClone() {
-  const [currentFolder, setCurrentFolder] = useState<FileItem>(mockData);
-  const [breadcrumbs, setBreadcrumbs] = useState<FileItem[]>([mockData]);
-  const [searchResults, setSearchResults] = useState<FileItem[] | null>(null);
+  const [currentFolder, setCurrentFolder] = useState<string>("root");
 
-  const handleUpload = () => {
-    // Mock upload functionality
-    alert("Upload functionality would be implemented here");
+  const getCurrentFiles = () => {
+    return mockFiles.filter((file) => file.parent === currentFolder);
+  };
+  const getCurrentFolder = () => {
+    return mockFolders.filter((file) => file.parent === currentFolder);
   };
 
-  const navigateToFolder = (folder: FileItem) => {
-    setCurrentFolder(folder);
-    setBreadcrumbs((prev) => {
-      const index = prev.findIndex((item) => item.id === folder.id);
-      if (index !== -1) {
-        return prev.slice(0, index + 1);
+  const handleFolderClick = (folderId: string) => {
+    setCurrentFolder(folderId);
+  };
+
+  const breadcrumbs = useMemo(() => {
+    const breadcrumbs = [];
+    let currentId = currentFolder;
+
+    while (currentId !== "root") {
+      const folder = mockFolders.find((folder) => folder.id === currentId);
+      if (folder) {
+        breadcrumbs.unshift(folder);
+        currentId = folder.parent ?? "root";
       } else {
-        return [...prev, folder];
+        break;
       }
-    });
-    setSearchResults(null);
-  };
-
-  const handleSearch = (query: string) => {
-    if (!query) {
-      setSearchResults(null);
-      return;
     }
 
-    const searchRecursive = (items: FileItem[]): FileItem[] => {
-      return items.flatMap((item) => {
-        if (item.name.toLowerCase().includes(query.toLowerCase())) {
-          return [item];
-        }
-        if (item.children) {
-          return searchRecursive(item.children);
-        }
-        return [];
-      });
-    };
+    return breadcrumbs;
+  }, [currentFolder]);
 
-    const results = searchRecursive(mockData.children ?? []);
-    setSearchResults(results);
+  const handleUpload = () => {
+    alert("Upload functionality would be implemented here");
   };
 
   return (
     <div className="min-h-screen bg-gray-900 p-8 text-gray-100">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <h1 className="text-2xl font-bold">Google Drive Clone</h1>
-          <SearchBar onSearch={handleSearch} />
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center">
+            <Button
+              onClick={() => setCurrentFolder("root")}
+              variant="ghost"
+              className="mr-2 text-gray-300 hover:text-white"
+            >
+              My Drive
+            </Button>
+            {breadcrumbs.map((folder, index) => (
+              <div key={folder.id} className="flex items-center">
+                <ChevronRight className="mx-2 text-gray-500" size={16} />
+                <Button
+                  onClick={() => handleFolderClick(folder.id)}
+                  variant="ghost"
+                  className="text-gray-300 hover:text-white"
+                >
+                  {folder.name}
+                </Button>
+              </div>
+            ))}
+          </div>
           <Button
             onClick={handleUpload}
             className="bg-blue-600 text-white hover:bg-blue-700"
           >
-            <Upload className="mr-2 h-4 w-4" /> Upload
+            <Upload className="mr-2" size={20} />
+            Upload
           </Button>
         </div>
-
-        {!searchResults && (
-          <Breadcrumb className="mb-6">
-            {breadcrumbs.map((item, index) => (
-              <BreadcrumbItem key={item.id}>
-                <BreadcrumbLink
-                  onClick={() => navigateToFolder(item)}
-                  className="cursor-pointer text-blue-400 hover:text-blue-300"
-                >
-                  {item.name}
-                </BreadcrumbLink>
-                {index < breadcrumbs.length - 1 && (
-                  <ChevronRight className="mx-1 h-4 w-4 text-gray-500" />
-                )}
-              </BreadcrumbItem>
+        <div className="rounded-lg bg-gray-800 shadow-xl">
+          <div className="border-b border-gray-700 px-6 py-4">
+            <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-400">
+              <div className="col-span-6">Name</div>
+              <div className="col-span-3">Type</div>
+              <div className="col-span-3">Size</div>
+            </div>
+          </div>
+          <ul>
+            {getCurrentFolder().map((folder) => (
+              <FolderRow
+                key={folder.id}
+                folder={folder}
+                handleFolderClick={() => {
+                  handleFolderClick(folder.id);
+                }}
+              />
             ))}
-          </Breadcrumb>
-        )}
-
-        <FileExplorer
-          items={searchResults ?? currentFolder.children ?? []}
-          onFolderClick={navigateToFolder}
-        />
+            {getCurrentFiles().map((file) => (
+              <FileRow key={file.id} file={file} />
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );
