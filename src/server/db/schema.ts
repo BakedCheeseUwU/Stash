@@ -3,6 +3,7 @@ import {
   index,
   singlestoreTableCreator,
   bigint,
+  int,
 } from "drizzle-orm/singlestore-core";
 
 /**
@@ -22,7 +23,7 @@ export const files = createTable(
     name: text("name").notNull(),
     url: text("url").notNull(),
     parent: bigint("parent", { mode: "number", unsigned: true }).notNull(),
-    size: text("size").notNull(),
+    size: int("size").notNull(),
   },
   (t) => {
     return [index("parent_folder").on(t.parent)];
