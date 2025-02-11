@@ -2,7 +2,7 @@
 
 ## TODO
 
-- [ ] Setup Database and data model
+- [x] Setup Database and data model
 - [ ] Move Folder open state to URL
 - [ ] Setup Auth
 - [ ] Add file uploading
@@ -13,7 +13,7 @@ Just finished connecting the database.
 
 Next Steps:
 
-- [ ] Update Schema to show files and folders
-- [ ] Manually insert examples
+- [x] Update Schema to show files and folders
+- [x] Manually insert examples
 - [ ] Render them in UI
 - [ ] Push and Hope.
