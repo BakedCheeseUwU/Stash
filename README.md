@@ -15,5 +15,5 @@ Next Steps:
 
 - [x] Update Schema to show files and folders
 - [x] Manually insert examples
-- [ ] Render them in UI
-- [ ] Push and Hope.
+- [x] Render them in UI
+- [x] Push and Hope.
